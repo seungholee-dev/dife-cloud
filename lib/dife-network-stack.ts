@@ -12,6 +12,7 @@ export class NetworkStack extends Stack {
 
 		const vpc = new Vpc(this, "DifeCloudVPC", {
 			maxAzs: 2,
+			natGateways: 0,
 			subnetConfiguration: [
 				{
 					cidrMask: 24,
@@ -22,6 +23,11 @@ export class NetworkStack extends Stack {
 					cidrMask: 24,
 					name: "DifePrivateSubnet",
 					subnetType: SubnetType.PRIVATE_ISOLATED,
+				},
+				{
+					cidrMask: 24,
+					name: "DifePrivateWithEgressSubnet",
+					subnetType: SubnetType.PRIVATE_WITH_EGRESS,
 				},
 			],
 			vpcName: "dife-vpc",

@@ -9,10 +9,15 @@ import { PipelineStack } from "../lib/dife-pipeline-stack";
 import { RedisStack } from "../lib/dife-redis-stack";
 import { BastionStack } from "../lib/dife-bastion-stack";
 import { SecretStack } from "../lib/dife-secret-stack";
+import { NatStack } from "../lib/dife-nat-stack";
 
 const app = new cdk.App();
 
 const networkingStack = new NetworkStack(app, "DifeNetworkStack", {});
+
+const natStack = new NatStack(app, "DifeNatStack", {
+	vpc: networkingStack.vpc,
+});
 
 const bastionStack = new BastionStack(app, "DifeBastionStack", {
 	vpc: networkingStack.vpc,
@@ -20,6 +25,7 @@ const bastionStack = new BastionStack(app, "DifeBastionStack", {
 
 const applicationStack = new ApplicationStack(app, "DifeApplicationStack", {
 	vpc: networkingStack.vpc,
+	natSecurityGroup: natStack.natSecurityGroup,
 });
 
 new DatabaseStack(app, "DifeDatabaseStack", {

@@ -39,6 +39,7 @@ import { Secret } from "aws-cdk-lib/aws-secretsmanager";
 
 interface ApplicationStackProps extends StackProps {
 	vpc: Vpc;
+	natSecurityGroup: SecurityGroup;
 }
 
 export class ApplicationStack extends Stack {
@@ -48,6 +49,7 @@ export class ApplicationStack extends Stack {
 		super(scope, id, props);
 
 		const vpc = props.vpc;
+		const natSecurityGroup = props.natSecurityGroup;
 
 		const cluster = new Cluster(this, "DifeCluster", {
 			vpc,
@@ -75,7 +77,7 @@ export class ApplicationStack extends Stack {
 
 		const asg = new AutoScalingGroup(this, "DifeApplicationServer", {
 			vpc,
-			vpcSubnets: { subnetType: SubnetType.PUBLIC },
+			vpcSubnets: { subnetType: SubnetType.PRIVATE_WITH_EGRESS },
 			role: instanceRole,
 			autoScalingGroupName: "dife-asg",
 			instanceType: InstanceType.of(InstanceClass.T3, InstanceSize.SMALL),
@@ -284,6 +286,42 @@ export class ApplicationStack extends Stack {
 			albSg,
 			Port.tcp(8080),
 			"Allow ALB access to ECS service",
+		);
+
+		natSecurityGroup.addIngressRule(
+			ecsServiceSg,
+			Port.tcp(80),
+			"Allow HTTP traffic from private subnet",
+		);
+
+		natSecurityGroup.addIngressRule(
+			ecsServiceSg,
+			Port.tcp(443),
+			"Allow HTTPS traffic from private subnet",
+		);
+
+		natSecurityGroup.addIngressRule(
+			ecsServiceSg,
+			Port.allIcmp(),
+			"Allow ICMP traffic from private subnet",
+		);
+
+		natSecurityGroup.addIngressRule(
+			ecsServiceSg,
+			Port.tcp(465),
+			"Allow SMTPS traffic(Legacy Support) from private subnet",
+		);
+
+		natSecurityGroup.addIngressRule(
+			ecsServiceSg,
+			Port.tcp(587),
+			"Allow SMTPS traffic from private subnet",
+		);
+
+		natSecurityGroup.addIngressRule(
+			ecsServiceSg,
+			Port.tcp(25),
+			"Allow SMTP traffic from private subnet",
 		);
 
 		Tags.of(cluster).add("env", "prod");
