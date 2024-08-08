@@ -1,0 +1,29 @@
+name: Lint
+
+on:
+    push:
+        branches:
+            - prod
+    pull_request:
+
+jobs:
+    eslint-and-prettier:
+        name: Prettier & ESLint
+        runs-on: ubuntu-latest
+
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Use Node.js 20
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 20
+
+            - name: Install Dependencies
+              run: npm install
+
+            - name: Check Prettier Rules Applied
+              run: npm run prettier
+
+            - name: Check ESLint Rules Applied
+              run: npm run lint
