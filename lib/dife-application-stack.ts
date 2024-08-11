@@ -30,12 +30,16 @@ import {
 	LogDriver,
 	Secret as ECSSecretManager,
 } from "aws-cdk-lib/aws-ecs";
-import { ApplicationLoadBalancer } from "aws-cdk-lib/aws-elasticloadbalancingv2";
+import {
+	ApplicationLoadBalancer,
+	ListenerAction,
+} from "aws-cdk-lib/aws-elasticloadbalancingv2";
 import { Role, ServicePrincipal, ManagedPolicy } from "aws-cdk-lib/aws-iam";
 import { Construct } from "constructs";
 import { LogGroup } from "aws-cdk-lib/aws-logs";
 import { StringParameter } from "aws-cdk-lib/aws-ssm";
 import { Secret } from "aws-cdk-lib/aws-secretsmanager";
+import { Certificate } from "aws-cdk-lib/aws-certificatemanager";
 
 interface ApplicationStackProps extends StackProps {
 	vpc: Vpc;
@@ -44,6 +48,7 @@ interface ApplicationStackProps extends StackProps {
 
 export class ApplicationStack extends Stack {
 	ecsServiceSecurityGroup: SecurityGroup;
+	alb: ApplicationLoadBalancer;
 
 	constructor(scope: Construct, id: string, props: ApplicationStackProps) {
 		super(scope, id, props);
@@ -263,11 +268,31 @@ export class ApplicationStack extends Stack {
 			vpcSubnets: { subnetType: SubnetType.PUBLIC },
 		});
 
-		const listener = alb.addListener("Listener", {
+		alb.addListener("HttpListener", {
 			port: 80,
+			defaultAction: ListenerAction.redirect({
+				protocol: "HTTPS",
+				port: "443",
+				permanent: true,
+			}),
 		});
 
-		listener.addTargets("DifeECSTargets", {
+		// BEFORE RUNNING BELOW CODE, FOLLOW THESE STEPS:
+		// ACTION: 1.CREATE CERTIFICATE FIRST
+		// ACTION: 2.NEED TO MANUALLY GET CERTIFICATE_ARN(NEED MANUAL CREATION) AND SET AS ENV
+		// ACTION: 3.YOU NEED TO ADD CNAME IN AWS CONSOLE FOR CERTIFICATE <-> HOSTEDZONE
+		const CERTIFICATE_ARN = process.env.CERTIFICATE_ARN || "";
+		const certificate = Certificate.fromCertificateArn(
+			this,
+			"DifeCertificate",
+			CERTIFICATE_ARN,
+		);
+		const httpsListener = alb.addListener("HttpsListener", {
+			port: 443,
+			certificates: [certificate],
+		});
+
+		httpsListener.addTargets("DifeECSTargets", {
 			port: 80,
 			targetGroupName: "dife-ecs-container-targets",
 			targets: [
@@ -327,6 +352,7 @@ export class ApplicationStack extends Stack {
 		Tags.of(cluster).add("env", "prod");
 
 		this.ecsServiceSecurityGroup = ecsServiceSg;
+		this.alb = alb;
 
 		new CfnOutput(this, "ALBDNSName", {
 			value: alb.loadBalancerDnsName,

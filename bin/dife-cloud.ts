@@ -10,6 +10,7 @@ import { RedisStack } from "../lib/dife-redis-stack";
 import { BastionStack } from "../lib/dife-bastion-stack";
 import { SecretStack } from "../lib/dife-secret-stack";
 import { NatStack } from "../lib/dife-nat-stack";
+import { DomainStack } from "../lib/dife-domain-stack";
 
 const app = new cdk.App();
 
@@ -26,6 +27,10 @@ const bastionStack = new BastionStack(app, "DifeBastionStack", {
 const applicationStack = new ApplicationStack(app, "DifeApplicationStack", {
 	vpc: networkingStack.vpc,
 	natSecurityGroup: natStack.natSecurityGroup,
+});
+
+new DomainStack(app, "DifeDomainStack", {
+	alb: applicationStack.alb,
 });
 
 new DatabaseStack(app, "DifeDatabaseStack", {
