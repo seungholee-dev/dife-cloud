@@ -165,9 +165,16 @@ export class ApplicationStack extends Stack {
 			"difegmailsecret",
 		);
 
+		const deeplsecret = Secret.fromSecretNameV2(
+			this,
+			"DifeDeepLSecret",
+			"difedeeplsecret",
+		);
+
 		jwtSecret.grantRead(taskRole);
 		dbSecret.grantRead(taskRole);
 		gmailAppPassword.grantRead(taskRole);
+		deeplsecret.grantRead(taskRole);
 
 		const redisHost = StringParameter.valueForStringParameter(
 			this,
@@ -215,6 +222,8 @@ export class ApplicationStack extends Stack {
 				),
 				GOOGLE_APP_PASSWORD:
 					ECSSecretManager.fromSecretsManager(gmailAppPassword),
+				DEEPL_TRANSLATE_API_KEY:
+					ECSSecretManager.fromSecretsManager(deeplsecret),
 			},
 			portMappings: [{ containerPort: 8080, hostPort: 8080 }],
 			logging: LogDriver.awsLogs({

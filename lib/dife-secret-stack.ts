@@ -8,9 +8,10 @@ interface SecretStackProps {}
 export class SecretStack extends Stack {
 	constructor(scope: Construct, id: string, props: SecretStackProps) {
 		super(scope, id, props);
+		// ACTION: NEED TO ADD SECRET
 		new Secret(this, "DifeGoogleAppSecret", {
 			secretName: "difegmailsecret",
-			removalPolicy: RemovalPolicy.DESTROY,
+			removalPolicy: RemovalPolicy.RETAIN,
 		});
 
 		new Secret(this, "DifeJWTSecret", {
@@ -21,9 +22,16 @@ export class SecretStack extends Stack {
 				secretStringTemplate: JSON.stringify({}),
 				generateStringKey: "jwtSecret",
 			},
-			removalPolicy: RemovalPolicy.DESTROY,
+			removalPolicy: RemovalPolicy.RETAIN,
 		});
 
+		// ACTION: NEED TO ADD SECRET
+		new Secret(this, "DifeDeepLSecret", {
+			secretName: "difedeeplsecret",
+			removalPolicy: RemovalPolicy.RETAIN,
+		});
+
+		// ACTION: NEED TO ADD SECRET
 		this.createParameter("dife-gmail", "tmp(change this)", "Google email");
 	}
 	private createParameter(name: string, value: string, description: string) {
@@ -31,6 +39,6 @@ export class SecretStack extends Stack {
 			parameterName: name,
 			stringValue: value,
 			description,
-		}).applyRemovalPolicy(RemovalPolicy.DESTROY);
+		}).applyRemovalPolicy(RemovalPolicy.RETAIN);
 	}
 }
