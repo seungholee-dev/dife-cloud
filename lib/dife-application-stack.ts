@@ -58,6 +58,7 @@ export class ApplicationStack extends Stack {
 
 		const cluster = new Cluster(this, "DifeCluster", {
 			vpc,
+			containerInsights: true,
 			clusterName: "dife-cluster",
 		});
 

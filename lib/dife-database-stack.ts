@@ -83,6 +83,8 @@ export class DatabaseStack extends Stack {
 			backupRetention: Duration.days(7),
 			credentials: Credentials.fromSecret(dbSecret),
 			subnetGroup: rdsSubnetGroup,
+			deletionProtection: true,
+			maxAllocatedStorage: 40,
 		});
 
 		rdsSecurityGroup.addIngressRule(
