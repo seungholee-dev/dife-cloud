@@ -70,6 +70,7 @@ NAT Instance를 위한 이미지를 만들기 위해 Amazon Linux 2를 기반으
 ### Bastion Instance
 
 Private Subnet에 위치한, RDS 등의 리소스를 접근하기 위해 사용하는 Jump Server입니다. 보안을 강화하기 위해 기존에 열려있는 Port 22를 닫고 AWS SSM을 통해, 안전하게 로컬에서 해당 인스턴스로 접속이 가능합니다. RDS를 접근할 때는, SSM과 터널링을 동시에 이용해서 로컬에서 PROD DB에 손쉽게 접근할 수 있습니다.
+
 <img src="./img/bastion.png" width="500" style="display:inline"/>
 
 ### Cloudwatch
