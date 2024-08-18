@@ -2,11 +2,15 @@
 
 ## 아키텍쳐 소개
 
-![](/img/aws.jpeg)
+
+<img src="./img/aws.jpeg" width="500" style="display:inline"/>
+
 2024 AWS Summit에 참여한 사진
 / [관련 LinkedIn 포스트](https://www.linkedin.com/posts/seungholee-dev_aws-ai-saas-activity-7197907941218242560-_7Oe?utm_source=share&utm_medium=member_desktop)
 
-![](/img/workshop.jpeg)
+
+<img src="./img/workshop.jpeg" width="500" style="display:inline"/>
+
 한국 아마존에서 주최한 워크숍에 참여한 사진 / [관련 LinkedIn 포스트](https://www.linkedin.com/posts/seungholee-dev_aws-eks-kubernetes-activity-7202338480037793792-9kPl?utm_source=share&utm_medium=member_desktop)
 
 
