@@ -24,7 +24,9 @@
 - [System Design Interview - Alex Xu](https://www.amazon.com/System-Design-Interview-insiders-Second/dp/B08CMF2CQF)
 - 그 외 각종 기술 블로그 및 유튜브 참고
 
-![](/img/architecture.png)
+### 아키텍쳐
+
+![](/img/architecture2.png)
 
 
 ### AWS CDK
@@ -42,6 +44,11 @@ Github Action을 사용하여 Backend repo에서 prod 브랜치로 배포시, Sp
 
 <img src="./img/deploy-ci.png" width="500" style="display:inline"/>
 
+### Cloudfront
+
+CDN을 이용한 캐싱효과를 누리고, difeapp.com이라는 도메인에서 S3 Static file hosting을 사용하기 위해 S3와 Cloudfront를 함께 배치했습니다. (SEO를 위한 랜딩페이지). difeapp.com/api/와 difeapp.com/health를 요청하면, ALB로 트래픽이 가게끔 Cloudfront Behavior를 설정했습니다.
+
+참고로, 도메인 설정을 Route53로 진행했습니다. 
 
 ### ECS
 
