@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { Stack, StackProps } from "aws-cdk-lib";
+import { RemovalPolicy, Stack, StackProps } from "aws-cdk-lib";
 import { Construct } from "constructs";
 import {
 	ARecord,
@@ -7,7 +7,18 @@ import {
 	RecordTarget,
 } from "aws-cdk-lib/aws-route53";
 import { ApplicationLoadBalancer } from "aws-cdk-lib/aws-elasticloadbalancingv2";
-import { LoadBalancerTarget } from "aws-cdk-lib/aws-route53-targets";
+import { CloudFrontTarget } from "aws-cdk-lib/aws-route53-targets";
+import {
+	Distribution,
+	OriginRequestPolicy,
+	ViewerProtocolPolicy,
+} from "aws-cdk-lib/aws-cloudfront";
+import {
+	LoadBalancerV2Origin,
+	S3Origin,
+} from "aws-cdk-lib/aws-cloudfront-origins";
+import { Certificate } from "aws-cdk-lib/aws-certificatemanager";
+import { Bucket } from "aws-cdk-lib/aws-s3";
 
 interface DomainStackProps extends StackProps {
 	alb: ApplicationLoadBalancer;
@@ -26,9 +37,85 @@ export class DomainStack extends Stack {
 			zoneName: DOMAIN_NAME,
 		});
 
+		// BEFORE RUNNING BELOW CODE, FOLLOW THESE STEPS:
+		// ACTION: 1. CREATE A CERTIFICATE IN THE US-EAST-1 REGION EXCLUSIVELY FOR CLOUDFRONT (SEPARATE FROM THE ALB CERTIFICATE)
+		// ACTION: 2. NEED TO MANUALLY GET CERTIFICATE_ARN(NEED MANUAL CREATION) AND SET AS ENV
+		const CLOUDFRONT_CERTIFICATE_ARN: string =
+			process.env.CLOUDFRONT_CERTIFICATE_ARN || "";
+
+		const certificate = Certificate.fromCertificateArn(
+			this,
+			"DifeLandingPageCertificate",
+			CLOUDFRONT_CERTIFICATE_ARN,
+		);
+
+		const bucket = new Bucket(this, "DifeLandingPageBucket", {
+			websiteIndexDocument: "index.html",
+			bucketName: "dife-landing-page-bucket",
+			removalPolicy: RemovalPolicy.RETAIN,
+			publicReadAccess: true,
+			blockPublicAccess: {
+				blockPublicAcls: false,
+				blockPublicPolicy: false,
+				ignorePublicAcls: false,
+				restrictPublicBuckets: false,
+			},
+		});
+
+		const distribution = new Distribution(
+			this,
+			"DifeLandingPageDistribution",
+			{
+				defaultBehavior: {
+					origin: new S3Origin(bucket),
+					viewerProtocolPolicy:
+						ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+				},
+				additionalBehaviors: {
+					"/api/*": {
+						origin: new LoadBalancerV2Origin(alb),
+						viewerProtocolPolicy:
+							ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+						originRequestPolicy: OriginRequestPolicy.ALL_VIEWER,
+						allowedMethods: {
+							methods: [
+								"GET",
+								"HEAD",
+								"OPTIONS",
+								"PUT",
+								"POST",
+								"PATCH",
+								"DELETE",
+							],
+						},
+					},
+					"/health": {
+						origin: new LoadBalancerV2Origin(alb),
+						viewerProtocolPolicy:
+							ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+						originRequestPolicy: OriginRequestPolicy.ALL_VIEWER,
+						allowedMethods: {
+							methods: [
+								"GET",
+								"HEAD",
+								"OPTIONS",
+								"PUT",
+								"POST",
+								"PATCH",
+								"DELETE",
+							],
+						},
+					},
+				},
+				defaultRootObject: "index.html",
+				domainNames: [DOMAIN_NAME],
+				certificate,
+			},
+		);
+
 		new ARecord(this, "DifeARecord", {
 			zone: hostedZone,
-			target: RecordTarget.fromAlias(new LoadBalancerTarget(alb)),
+			target: RecordTarget.fromAlias(new CloudFrontTarget(distribution)),
 		});
 	}
 }
