@@ -9,6 +9,7 @@ import {
 import { ApplicationLoadBalancer } from "aws-cdk-lib/aws-elasticloadbalancingv2";
 import { CloudFrontTarget } from "aws-cdk-lib/aws-route53-targets";
 import {
+	CachePolicy,
 	Distribution,
 	OriginRequestPolicy,
 	ViewerProtocolPolicy,
@@ -62,6 +63,8 @@ export class DomainStack extends Stack {
 			},
 		});
 
+		const albOrigin = new LoadBalancerV2Origin(alb);
+
 		const distribution = new Distribution(
 			this,
 			"DifeLandingPageDistribution",
@@ -73,7 +76,7 @@ export class DomainStack extends Stack {
 				},
 				additionalBehaviors: {
 					"/api/*": {
-						origin: new LoadBalancerV2Origin(alb),
+						origin: albOrigin,
 						viewerProtocolPolicy:
 							ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
 						originRequestPolicy: OriginRequestPolicy.ALL_VIEWER,
@@ -89,21 +92,23 @@ export class DomainStack extends Stack {
 							],
 						},
 					},
-					"/health": {
-						origin: new LoadBalancerV2Origin(alb),
+					"/ws": {
+						origin: albOrigin,
 						viewerProtocolPolicy:
 							ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
 						originRequestPolicy: OriginRequestPolicy.ALL_VIEWER,
 						allowedMethods: {
-							methods: [
-								"GET",
-								"HEAD",
-								"OPTIONS",
-								"PUT",
-								"POST",
-								"PATCH",
-								"DELETE",
-							],
+							methods: ["HEAD", "GET"],
+						},
+						cachePolicy: CachePolicy.CACHING_DISABLED,
+					},
+					"/health": {
+						origin: albOrigin,
+						viewerProtocolPolicy:
+							ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+						originRequestPolicy: OriginRequestPolicy.ALL_VIEWER,
+						allowedMethods: {
+							methods: ["HEAD", "GET"],
 						},
 					},
 				},
