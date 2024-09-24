@@ -3,6 +3,7 @@ import {
 	BlockPublicAccess,
 	Bucket,
 	BucketEncryption,
+	RedirectProtocol,
 } from "aws-cdk-lib/aws-s3";
 import { StringParameter } from "aws-cdk-lib/aws-ssm";
 import { Construct } from "constructs";
@@ -27,6 +28,18 @@ export class StorageStack extends Stack {
 			bucketName: "dife-logs-bucket",
 			encryption: BucketEncryption.S3_MANAGED,
 			blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
+		});
+
+		// ACTION FOR QR: NEED QR A record
+		// ACTION FOR QR: Needs ACM for Subdomain if not needed.
+		new Bucket(this, "QRRedirectBucket", {
+			bucketName: "qr.difeapp.com",
+			websiteRedirect: {
+				hostName: "www.naver.com",
+				protocol: RedirectProtocol.HTTPS,
+			},
+			removalPolicy: RemovalPolicy.DESTROY,
+			autoDeleteObjects: true,
 		});
 
 		this.createParameter(

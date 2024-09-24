@@ -53,7 +53,7 @@ export class DomainStack extends Stack {
 		const bucket = new Bucket(this, "DifeLandingPageBucket", {
 			websiteIndexDocument: "index.html",
 			bucketName: "dife-landing-page-bucket",
-			removalPolicy: RemovalPolicy.RETAIN,
+			removalPolicy: RemovalPolicy.DESTROY,
 			publicReadAccess: true,
 			blockPublicAccess: {
 				blockPublicAcls: false,
