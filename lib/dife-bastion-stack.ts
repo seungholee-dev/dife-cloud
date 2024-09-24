@@ -1,5 +1,6 @@
 import { StackProps } from "aws-cdk-lib";
 import {
+	AmazonLinuxCpuType,
 	Instance,
 	InstanceClass,
 	InstanceSize,
@@ -49,8 +50,11 @@ export class BastionStack extends Stack {
 
 		const bastionInstance = new Instance(this, "DifeBastionEC2", {
 			instanceName: "dife-bastion",
-			instanceType: InstanceType.of(InstanceClass.T3, InstanceSize.NANO),
-			machineImage: MachineImage.latestAmazonLinux2(),
+			instanceType: InstanceType.of(InstanceClass.T4G, InstanceSize.NANO),
+			machineImage: MachineImage.latestAmazonLinux2({
+				cpuType: AmazonLinuxCpuType.ARM_64,
+			}),
+			associatePublicIpAddress: true,
 			securityGroup: bastionSG,
 			vpc,
 			vpcSubnets: {
