@@ -31,11 +31,11 @@ export class StorageStack extends Stack {
 		});
 
 		// ACTION FOR QR: NEED QR A record
-		// ACTION FOR QR: Needs ACM for Subdomain if not needed.
+		// ACTION FOR QR: Needs ACM
 		new Bucket(this, "QRRedirectBucket", {
 			bucketName: "qr.difeapp.com",
 			websiteRedirect: {
-				hostName: "www.naver.com",
+				hostName: "difeapp.com",
 				protocol: RedirectProtocol.HTTPS,
 			},
 			removalPolicy: RemovalPolicy.DESTROY,
