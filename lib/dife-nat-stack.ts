@@ -50,7 +50,7 @@ export class NatStack extends Stack {
 		const natInstance = new Instance(this, "DifeNatInstance", {
 			instanceName: "dife-nat-instance",
 			role: natRole,
-			instanceType: InstanceType.of(InstanceClass.T3, InstanceSize.NANO),
+			instanceType: InstanceType.of(InstanceClass.T3, InstanceSize.MICRO),
 			machineImage: MachineImage.latestAmazonLinux2(),
 			securityGroup: natSG,
 			sourceDestCheck: false,

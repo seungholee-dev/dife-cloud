@@ -1,5 +1,10 @@
 import { RemovalPolicy, Stack } from "aws-cdk-lib";
-import { Bucket } from "aws-cdk-lib/aws-s3";
+import {
+	BlockPublicAccess,
+	Bucket,
+	BucketEncryption,
+	RedirectProtocol,
+} from "aws-cdk-lib/aws-s3";
 import { StringParameter } from "aws-cdk-lib/aws-ssm";
 import { Construct } from "constructs";
 
@@ -10,13 +15,31 @@ export class StorageStack extends Stack {
 		super(scope, id, props);
 
 		const bucket = new Bucket(this, "DifeBucket", {
+			versioned: true,
 			removalPolicy: RemovalPolicy.RETAIN,
 			bucketName: "dife-bucket",
+			encryption: BucketEncryption.S3_MANAGED,
+			blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
 		});
 
 		new Bucket(this, "DifeLogsBucket", {
+			versioned: true,
 			removalPolicy: RemovalPolicy.RETAIN,
 			bucketName: "dife-logs-bucket",
+			encryption: BucketEncryption.S3_MANAGED,
+			blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
+		});
+
+		// ACTION FOR QR: NEED QR A record
+		// ACTION FOR QR: Needs ACM
+		new Bucket(this, "QRRedirectBucket", {
+			bucketName: "qr.difeapp.com",
+			websiteRedirect: {
+				hostName: "difeapp.com",
+				protocol: RedirectProtocol.HTTPS,
+			},
+			removalPolicy: RemovalPolicy.DESTROY,
+			autoDeleteObjects: true,
 		});
 
 		this.createParameter(
